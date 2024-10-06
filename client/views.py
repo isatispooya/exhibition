@@ -14,14 +14,14 @@ frm ='30001526'
 usrnm = 'isatispooya'
 psswrd ='5246043adeleh'
 
-
+# sms for uuid
 def SendSms(snd,txt):
-    txt = f'به کارگزاری ایساتیس پویا خوش آمدید \n لینک سوالات:\n www.isatispooya.com/{txt}'
+    txt = f'به کارگزاری ایساتیس پویا خوش آمدید \n لینک سوالات:\n www.isatispooya.com/{txt}/'
     resp = requests.get(url=f'http://tsms.ir/url/tsmshttp.php?from={frm}&to={snd}&username={usrnm}&password={psswrd}&message={txt}').json()
     print(txt)
     return resp
 
-
+# create uuid
 class ClientViewset(APIView):
     def post (self,request):
         mobile = request.data.get('mobile')
@@ -38,9 +38,30 @@ class ClientViewset(APIView):
 
 
 
+# check uuid
+class CheckUuidViewset(APIView) :
+    def get (self, request, uuid):
+        client = models.Client.objects.filter(uuid=uuid , gift= None).first()
+        if not client:
+            return Response({'error':'کد گیف وارد شده معتبر نیست'},status=status.HTTP_400_BAD_REQUEST)
+        
+        return Response (True, status=status.HTTP_200_OK)
 
 
 
+# sms for gift
+def SendSms2(mobile, gift):
+    txt = 'به کارگزاری ایساتیس پویا خوش آمدید \n'
+    txt += 'ادرس سایت:\n www.isatispooya.com/ \n'
+    txt += 'هدیه شما:\n'
+    txt += f'{gift}\n'  
+    resp = requests.get(
+        url=f'http://tsms.ir/url/tsmshttp.php?from={frm}&to={mobile}&username={usrnm}&password={psswrd}&message={txt}'
+    ).json()
+    print(txt)
+    return resp
+
+# lottery and give gift
 class GiftViewset(APIView):
     def post (self, request ,uuid) :
         if not uuid :
@@ -68,7 +89,7 @@ class GiftViewset(APIView):
         client.gift = str(df)
         client.save()
         
-        SendSms(client.mobile,client.gift)
+        SendSms2(client.mobile,client.gift)
         return Response(df, status=status.HTTP_201_CREATED)
 
 
