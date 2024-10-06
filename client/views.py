@@ -6,7 +6,8 @@ from . import serializers
 import datetime
 from . import models
 import requests
-
+import pandas as pd
+import random
 
 
 frm ='30001526'
@@ -15,7 +16,7 @@ psswrd ='5246043adeleh'
 
 
 def SendSms(snd,txt):
-    txt = f'به کارگزاری ایساتیس پویا خوش آمدید \n لینک سوالات: {txt}'
+    txt = f'به کارگزاری ایساتیس پویا خوش آمدید \n لینک سوالات:\n www.isatispooya.com/{txt}'
     resp = requests.get(url=f'http://tsms.ir/url/tsmshttp.php?from={frm}&to={snd}&username={usrnm}&password={psswrd}&message={txt}').json()
     print(txt)
     return resp
@@ -35,6 +36,40 @@ class ClientViewset(APIView):
             SendSms(mobile,client.uuid)
             return Response(serializer.data, status=status.HTTP_201_CREATED)
 
+
+
+
+
+
+class GiftViewset(APIView):
+    def post (self, request ,uuid) :
+        if not uuid :
+            return Response({'error':'لطفا یک کد گیف وارد کنید'},status=status.HTTP_400_BAD_REQUEST)
+        client = models.Client.objects.filter(uuid=uuid).first()
+        if not client :
+            return Response({'error':'کد گیف وارد شده معتبر نیست'},status=status.HTTP_400_BAD_REQUEST)
+        if client.gift :
+            return Response({'error':'این کاربر قبلا یک کد گیف خریداری کرده است'},status=status.HTTP_400_BAD_REQUEST) 
+        answer = request.data.get('answer')
+        if answer >2 or answer < 0 or not answer  :
+            return Response({'error':'لطفا پاسخ را به صورت عددی وارد کنید'},status=status.HTTP_400_BAD_REQUEST)
+        
+        df = pd.read_excel('book1.xlsx')
+        df = df[df['جواب']==answer]
+        df['max'] = df['max'].apply(int)
+        df['min'] = df['min'].apply(int)
+        possibility = 90#random.randint(0,100)
+        df = df[df['min'] <= possibility]
+        df = df[df['max'] > possibility]
+        df = df.to_dict('records')[0]
+        del df['جواب']
+        del df['max']
+        del df['min']
+        client.gift = str(df)
+        client.save()
+        
+        SendSms(client.mobile,client.gift)
+        return Response(df, status=status.HTTP_201_CREATED)
 
 
 
