@@ -58,7 +58,7 @@ class GiftViewset(APIView):
         df = df[df['جواب']==answer]
         df['max'] = df['max'].apply(int)
         df['min'] = df['min'].apply(int)
-        possibility = 90#random.randint(0,100)
+        possibility = random.randint(0,100)
         df = df[df['min'] <= possibility]
         df = df[df['max'] > possibility]
         df = df.to_dict('records')[0]
