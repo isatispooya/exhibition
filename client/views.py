@@ -16,7 +16,7 @@ psswrd ='5246043adeleh'
 
 # sms for uuid
 def SendSms(snd,txt):
-    txt = f'به کارگزاری ایساتیس پویا خوش آمدید \n لینک سوالات:\n www.isatispooya.com/{txt}/'
+    txt = f'به کارگزاری ایساتیس پویا خوش آمدید \n ورود:\n www.isatispooya.com/{txt}/'
     resp = requests.get(url=f'http://tsms.ir/url/tsmshttp.php?from={frm}&to={snd}&username={usrnm}&password={psswrd}&message={txt}').json()
     print(txt)
     return resp
@@ -41,7 +41,13 @@ class ClientViewset(APIView):
 # check uuid
 class CheckUuidViewset(APIView) :
     def get (self, request, uuid):
-        client = models.Client.objects.filter(uuid=uuid , gift= None).first()
+        try:
+            client = models.Client.objects.filter(uuid=uuid , gift= None)
+        except:
+            return Response({'error':'کد گیف وارد شده معتبر نیست'},status=status.HTTP_400_BAD_REQUEST)
+        if not client.exists():
+            return Response({'error':'کد گیف وارد شده معتبر نیست'},status=status.HTTP_400_BAD_REQUEST)
+        client.first()
         if not client:
             return Response({'error':'کد گیف وارد شده معتبر نیست'},status=status.HTTP_400_BAD_REQUEST)
         
@@ -76,8 +82,8 @@ class GiftViewset(APIView):
         if client.gift :
             return Response({'error':'این کاربر قبلا یک کد گیف خریداری کرده است'},status=status.HTTP_400_BAD_REQUEST) 
         answer = request.data.get('answer')
-        if answer >2 or answer < 0 or not answer  :
-            return Response({'error':'لطفا پاسخ را به صورت عددی وارد کنید'},status=status.HTTP_400_BAD_REQUEST)
+        # if answer >2 or answer <= 0 or not answer  :
+        #     return Response({'error':'لطفا پاسخ را به صورت عددی وارد کنید'},status=status.HTTP_400_BAD_REQUEST)
         
         df = pd.read_excel('book1.xlsx')
         df = df[df['جواب']==answer]
