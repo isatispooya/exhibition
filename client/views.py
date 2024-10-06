@@ -66,9 +66,13 @@ class GiftViewset(APIView):
     def post (self, request ,uuid) :
         if not uuid :
             return Response({'error':'لطفا یک کد گیف وارد کنید'},status=status.HTTP_400_BAD_REQUEST)
-        client = models.Client.objects.filter(uuid=uuid).first()
-        if not client :
+        try:
+            client = models.Client.objects.filter(uuid=uuid)
+        except:
             return Response({'error':'کد گیف وارد شده معتبر نیست'},status=status.HTTP_400_BAD_REQUEST)
+        if not client.exists() :
+            return Response({'error':'کد گیف وارد شده معتبر نیست'},status=status.HTTP_400_BAD_REQUEST)
+        client = client.first()
         if client.gift :
             return Response({'error':'این کاربر قبلا یک کد گیف خریداری کرده است'},status=status.HTTP_400_BAD_REQUEST) 
         answer = request.data.get('answer')
