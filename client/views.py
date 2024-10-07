@@ -17,7 +17,7 @@ psswrd ='5246043adeleh'
 
 # sms for uuid
 def SendSms(snd,txt):
-    txt = f'به کارگزاری ایساتیس پویا خوش آمدید \n ورود:\n www.gift.isatispooya.com/{txt}/'
+    txt = f'به کارگزاری ایساتیس پویا خوش آمدید \n ورود:\n http://gift.isatispooya.com/{txt}/'
     resp = requests.get(url=f'http://tsms.ir/url/tsmshttp.php?from={frm}&to={snd}&username={usrnm}&password={psswrd}&message={txt}').json()
     print(txt)
     return resp
